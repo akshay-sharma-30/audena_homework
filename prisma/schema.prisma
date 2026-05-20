@@ -1,0 +1,48 @@
+// Prisma schema for Audena Calls demo.
+//
+// Design notes:
+//   - SQLite is intentional: zero-setup, file-backed, works offline.
+//   - SQLite does not support native enums, so `status` and `workflow` are
+//     plain strings validated at the application layer (see lib/types.ts).
+//   - `providerCallId` is the *external* provider's identifier (separate from
+//     our internal `id`). This mirrors how real telephony providers work
+//     (Twilio's CallSid, Telnyx's call_control_id) and is what the webhook
+//     uses to correlate status updates back to our records.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Call {
+  id             String   @id @default(cuid())
+  customerName   String
+  phoneNumber    String
+  workflow       String   // "support" | "sales" | "reminder"
+  status         String   @default("pending") // see CallStatus in lib/types.ts
+  providerCallId String?  @unique
+  errorMessage   String?
+  // AMD outcome — set when the provider reports who/what answered. Null until
+  // the call leaves `dialing`. "human" is the only value that ever invokes
+  // the AI agent; "machine"/"machine_end_beep" terminate as voicemail.
+  answeredBy     String?
+  // Which agent endpoint was acquired for this call. Released back to the
+  // pool when the call enters a terminal state. Null only for pre-acquisition
+  // failures (shouldn't happen — POST acquires before insert).
+  agentId        String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([status])
+  @@index([createdAt])
+  // Supports the per-recipient cooldown lookup in POST /api/calls.
+  @@index([phoneNumber, updatedAt])
+  // Composite for keyset (cursor) pagination on GET /api/calls — orders by
+  // createdAt desc with id as tiebreaker so rows with identical createdAt
+  // don't skip/repeat across page boundaries.
+  @@index([createdAt, id])
+}

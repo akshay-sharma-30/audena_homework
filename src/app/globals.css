@@ -1,0 +1,111 @@
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+  html,
+  body {
+    background: #08090b;
+    color: #e2e4e9;
+    font-feature-settings: "ss01", "cv11";
+  }
+  body {
+    font-family: "IBM Plex Sans", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+    /* Subtle grain overlay — adds depth without visual weight. Base64 noise
+       SVG kept tiny (~120 bytes); fixed-attachment so it doesn't move on
+       scroll. ~2% opacity reads as "instrument-panel finish," not noise. */
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.04 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+    background-repeat: repeat;
+    background-attachment: fixed;
+  }
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+  /* Allow status pill text colors to be inherited via currentColor — used
+     for the halo glow on active states (box-shadow: 0 0 6px currentColor). */
+}
+
+@layer components {
+  /* ---------- Form primitives ---------- */
+  .field-label {
+    @apply block font-display text-[10px] font-medium uppercase tracking-[0.2em]
+           text-ink-500 mb-2;
+  }
+  .field-input {
+    @apply w-full bg-panel-bg border border-panel-edge rounded-none px-3 py-2.5
+           text-[14px] font-mono text-ink-50 placeholder:text-ink-700 outline-none
+           focus:border-signal-amber focus:ring-0 transition-colors;
+  }
+  .field-input[aria-invalid="true"] {
+    @apply border-signal-red focus:border-signal-red;
+  }
+  .field-select {
+    @apply w-full bg-panel-bg border border-panel-edge rounded-none px-3 py-2.5
+           text-[14px] font-mono text-ink-50 outline-none
+           focus:border-signal-amber focus:ring-0 transition-colors
+           appearance-none cursor-pointer;
+  }
+
+  /* ---------- Action button (DIAL) ---------- */
+  .btn-dial {
+    @apply inline-flex w-full items-center justify-center gap-2
+           bg-signal-amber text-panel-bg rounded-none
+           px-4 py-3 font-display text-[12px] font-medium uppercase
+           tracking-[0.22em] hover:bg-[#ffba3a] active:bg-[#e09418]
+           disabled:opacity-40 disabled:cursor-not-allowed
+           transition-colors;
+  }
+
+  /* ---------- Operator panels ---------- */
+  .panel {
+    @apply bg-panel-raise border border-panel-edge;
+  }
+  .panel-header {
+    @apply font-display text-[10px] font-medium uppercase tracking-[0.22em]
+           text-ink-500 px-4 py-3 border-b border-panel-edge;
+  }
+
+  /* ---------- Status pill ---------- */
+  /* Mono uppercase, dot + label. Color comes from the per-status modifier
+     class; `currentColor` lets the halo glow inherit. */
+  .pill {
+    @apply inline-flex items-center gap-1.5 px-2 py-[3px]
+           font-display text-[10px] font-medium uppercase tracking-[0.14em]
+           border;
+  }
+  .pill-dot {
+    @apply h-1.5 w-1.5 rounded-full bg-current;
+  }
+  .pill-active .pill-dot {
+    box-shadow: 0 0 6px currentColor, 0 0 2px currentColor;
+    animation: pulse-soft 1.6s ease-in-out infinite;
+  }
+
+  /* ---------- Capacity bar glyphs ---------- */
+  .capacity-glyph {
+    @apply inline-block font-mono leading-none;
+  }
+}
+
+@layer utilities {
+  /* Per-row stagger for the first paint reveal. Cap at 10 rows of stagger
+     so a list of 50 calls doesn't keep animating for 2 seconds. */
+  .row-stagger > *:nth-child(1)  { animation-delay: 0ms; }
+  .row-stagger > *:nth-child(2)  { animation-delay: 30ms; }
+  .row-stagger > *:nth-child(3)  { animation-delay: 60ms; }
+  .row-stagger > *:nth-child(4)  { animation-delay: 90ms; }
+  .row-stagger > *:nth-child(5)  { animation-delay: 120ms; }
+  .row-stagger > *:nth-child(6)  { animation-delay: 150ms; }
+  .row-stagger > *:nth-child(7)  { animation-delay: 180ms; }
+  .row-stagger > *:nth-child(8)  { animation-delay: 210ms; }
+  .row-stagger > *:nth-child(9)  { animation-delay: 240ms; }
+  .row-stagger > *:nth-child(10) { animation-delay: 270ms; }
+  .row-stagger > *:nth-child(n+11) { animation-delay: 300ms; }
+}
